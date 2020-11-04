@@ -7,9 +7,9 @@ pip3 install -r requirements.txt
 ``` 
 
 # Tool
-[] (https://i.ibb.co/YfpqH4h/tool.png)
+![](https://i.ibb.co/YfpqH4h/tool.png)
 # Example
-[] (https://i.ibb.co/Pj8VCSt/example.png)
+![](https://i.ibb.co/Pj8VCSt/example.png)
 
 # Legal
  The software designed to perform website security testing.<br/>
