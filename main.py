@@ -107,10 +107,10 @@ class Main:
             usernames = self.ReadFile('usernames.txt','r')
             for username in usernames:
                 Run = True
-
-                if active_count()<=self.threads_num:
-                    Thread(target=self.UsernameCheck,args=(username,)).start()
-                    Run = False
+                while Run:
+                    if active_count()<=self.threads_num:
+                        Thread(target=self.UsernameCheck,args=(username,)).start()
+                        Run = False
 
     def GenName(self,length,include_digits,prefix,suffix):
         if include_digits == 1:
