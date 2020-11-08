@@ -123,3 +123,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+EpicGamesUsernameChecker.zip
+EpicGamesUsernameChecker/EpicGamesUsernameChecker.exe
+EpicGamesUsernameChecker/proxies.txt
+EpicGamesUsernameChecker/useragents.txt
+EpicGamesUsernameChecker/usernames.txt
