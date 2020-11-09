@@ -5,7 +5,9 @@ from random import choice
 from threading import Thread,Lock,active_count
 from string import ascii_letters,ascii_lowercase,ascii_uppercase,digits
 from time import sleep
+from datetime import datetime
 import requests
+import json
 
 class Main:
     def clear(self):
@@ -57,7 +59,7 @@ class Main:
 
     def TitleUpdate(self):
         while True:
-            self.SetTitle('One Man Builds EpicGames Username Checker ^& Generator ^| AVAILABLES: {0} ^| TAKENS: {1} ^| RETRIES: {2} ^| THREADS: {3}'.format(self.availables,self.takens,self.retries,active_count()-1))
+            self.SetTitle(f'One Man Builds EpicGames Username Checker ^& Generator ^| AVAILABLES: {self.availables} ^| TAKENS: {self.takens} ^| RETRIES: {self.retries} ^| WEBHOOK RETRIES: {self.webhook_retries} ^| THREADS: {active_count()-1}')
             sleep(0.1)
 
     def __init__(self):
@@ -75,9 +77,12 @@ class Main:
                                   ╚═══════════════════════════════════════════════════╝
         """
         print(self.title)
+
         self.availables = 0
         self.takens = 0
         self.retries = 0
+        self.webhook_retries = 0
+
         self.lock = Lock()
         self.account_type = int(input(Style.BRIGHT+Fore.CYAN+'['+Fore.RED+'>'+Fore.CYAN+'] ['+Fore.RED+'1'+Fore.CYAN+']Epic ['+Fore.RED+'2'+Fore.CYAN+']PSN ['+Fore.RED+'3'+Fore.CYAN+']Xbox Live: '))
         self.use_proxy = int(input(Style.BRIGHT+Fore.CYAN+'['+Fore.RED+'>'+Fore.CYAN+'] ['+Fore.RED+'1'+Fore.CYAN+']Proxy ['+Fore.RED+'0'+Fore.CYAN+']Proxyless: '))
@@ -86,6 +91,11 @@ class Main:
             self.proxy_type = int(input(Style.BRIGHT+Fore.CYAN+'['+Fore.RED+'>'+Fore.CYAN+'] ['+Fore.RED+'1'+Fore.CYAN+']Https ['+Fore.RED+'2'+Fore.CYAN+']Socks4 ['+Fore.RED+'3'+Fore.CYAN+']Socks5: '))
         
         self.method = int(input(Style.BRIGHT+Fore.CYAN+'['+Fore.RED+'>'+Fore.CYAN+'] ['+Fore.RED+'1'+Fore.CYAN+']Brute ['+Fore.RED+'0'+Fore.CYAN+']From usernames.txt: '))
+        self.enable_webhook = int(input(Style.BRIGHT+Fore.CYAN+'['+Fore.RED+'>'+Fore.CYAN+'] ['+Fore.RED+'1'+Fore.CYAN+']Enable Webhook ['+Fore.RED+'0'+Fore.CYAN+']No Webhook: '))
+        
+        if self.enable_webhook == 1:
+            self.webhook_url = str(input(Style.BRIGHT+Fore.CYAN+'['+Fore.RED+'>'+Fore.CYAN+'] Webhook URL: '))
+        
         self.threads_num = int(input(Style.BRIGHT+Fore.CYAN+'['+Fore.RED+'>'+Fore.CYAN+'] Threads: '))
 
         print('')
@@ -144,6 +154,40 @@ class Main:
             
         return name
 
+    def SendWebhook(self,message,proxy):
+        try:
+            timestamp = str(datetime.utcnow())
+
+            message_to_send = {"embeds": [{"title": "EPICGAMES AVAILABLE USERNAME","description": message,"color": 65362,"author": {"name": "AUTHOR'S DISCORD SERVER [CLICK HERE]","url": "https://discord.gg/33UzcuY","icon_url": "https://media.discordapp.net/attachments/774991492690608159/774991574953623582/onemanbuildslogov3.png"},"footer": {"text": "MADE BY ONEMANBUILDS","icon_url": "https://media.discordapp.net/attachments/774991492690608159/774991574953623582/onemanbuildslogov3.png"},"timestamp": timestamp,"image": {"url": "https://cdn.dribbble.com/users/2862116/screenshots/6853267/epicgamestore.gif"}}]}
+            
+            headers = {
+                'User-Agent':self.GetRandomUserAgent(),
+                'Pragma':'no-cache',
+                'Accept':'*/*',
+                'Content-Type':'application/json'
+            }
+
+            payload = json.dumps(message_to_send)
+
+            if self.use_proxy == 1:
+                response = requests.post(self.webhook_url,data=payload,headers=headers,proxies=proxy)
+            else:
+                response = requests.post(self.webhook_url,data=payload,headers=headers)
+
+            if response.text == "":
+                self.PrintText(Fore.CYAN,Fore.RED,'WEBHOOK',f'MESSAGE {message} SENT')
+            elif "You are being rate limited." in response.text:
+                self.SendWebhook(message,proxy)
+                self.webhook_retries += 1
+                #self.PrintText(Fore.RED,Fore.CYAN,'WEBHOOK','YOU ARE RATELIMITED')
+            else:
+                #self.PrintText(Fore.RED,Fore.CYAN,'WEBHOOK','SOMETHING WENT WRONG RETRY')
+                self.SendWebhook(message,proxy)
+                self.webhook_retries += 1
+        except:
+            self.SendWebhook(message,proxy)
+            self.webhook_retries += 1
+
     def UsernameCheck(self,name):
         try:
             headers = {
@@ -160,8 +204,10 @@ class Main:
             else:
                 link = f'https://fortnite-api.com/v1/stats/br/v2?name={name}&accountType=xbl'
 
+            proxy = self.GetRandomProxy()
+
             if self.use_proxy == 1:
-                response = requests.get(link,headers=headers,proxies=self.GetRandomProxy())
+                response = requests.get(link,headers=headers,proxies=proxy)
             else:
                 response = requests.get(link,headers=headers)
 
@@ -171,6 +217,8 @@ class Main:
                     with open('availables.txt','a',encoding='utf8') as f:
                         f.write(name+'\n')
                     self.availables += 1
+                    if self.enable_webhook == 1:
+                        self.SendWebhook(name,proxy)
                 elif response.json()['error'] == 'the requested profile didnt play any match yet':
                     with open('takens.txt','a',encoding='utf8') as f:
                         f.write(name+'\n')
