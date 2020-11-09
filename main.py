@@ -3,7 +3,7 @@ from os import name,system
 from sys import stdout
 from random import choice
 from threading import Thread,Lock,active_count
-from string import ascii_letters,digits
+from string import ascii_letters,ascii_lowercase,ascii_uppercase,digits
 from time import sleep
 import requests
 
@@ -94,14 +94,20 @@ class Main:
         Thread(target=self.TitleUpdate).start()
         if self.method == 1:
             username_length = int(input(Style.BRIGHT+Fore.CYAN+'['+Fore.RED+'>'+Fore.CYAN+'] Length: '))
-            include_digits = int(input(Style.BRIGHT+Fore.CYAN+'['+Fore.RED+'>'+Fore.CYAN+'] Include Digits ['+Fore.RED+'1'+Fore.CYAN+']yes ['+Fore.RED+'0'+Fore.CYAN+']no: '))
+            case = int(input(Style.BRIGHT+Fore.CYAN+'['+Fore.RED+'>'+Fore.CYAN+'] ['+Fore.RED+'1'+Fore.CYAN+']Lowercase ['+Fore.RED+'2'+Fore.CYAN+']Uppercase ['+Fore.RED+'3'+Fore.CYAN+']Both ['+Fore.RED+'4'+Fore.CYAN+']Only Digits: '))
+            
+            include_digits = 0
+
+            if case != 4:
+                include_digits = int(input(Style.BRIGHT+Fore.CYAN+'['+Fore.RED+'>'+Fore.CYAN+'] Include Digits ['+Fore.RED+'1'+Fore.CYAN+']yes ['+Fore.RED+'0'+Fore.CYAN+']no: '))
+            
             prefix = str(input(Style.BRIGHT+Fore.CYAN+'['+Fore.RED+'>'+Fore.CYAN+'] Prefix (leave it blank if you dont want to use): '))
             suffix = str(input(Style.BRIGHT+Fore.CYAN+'['+Fore.RED+'>'+Fore.CYAN+'] Suffix (leave it blank if you dont want to use): '))
             print('')
             Run = True
             while Run:
                 if active_count()<=self.threads_num:
-                    name = self.GenName(username_length,include_digits,prefix,suffix)
+                    name = self.GenName(username_length,include_digits,case,prefix,suffix)
                     Thread(target=self.UsernameCheck,args=(name,)).start()
         else:
             usernames = self.ReadFile('usernames.txt','r')
@@ -112,11 +118,30 @@ class Main:
                         Thread(target=self.UsernameCheck,args=(username,)).start()
                         Run = False
 
-    def GenName(self,length,include_digits,prefix,suffix):
-        if include_digits == 1:
-            name = prefix+''.join(choice(ascii_letters+digits) for num in range(length))+suffix
+    def GenName(self,length,include_digits,case,prefix,suffix):
+        if case == 1:
+            if include_digits == 1:
+                name = prefix+''.join(choice(ascii_lowercase+digits) for num in range(length))+suffix
+            else:
+                name = prefix+''.join(choice(ascii_lowercase) for num in range(length))+suffix
+        elif case == 2:
+            if include_digits == 1:
+                name = prefix+''.join(choice(ascii_uppercase+digits) for num in range(length))+suffix
+            else:
+                name = prefix+''.join(choice(ascii_uppercase) for num in range(length))+suffix
+        elif case == 3:
+            if include_digits == 1:
+                name = prefix+''.join(choice(ascii_letters+digits) for num in range(length))+suffix
+            else:
+                name = prefix+''.join(choice(ascii_letters) for num in range(length))+suffix
+        elif case == 4:
+            name = prefix+''.join(choice(digits) for num in range(length))+suffix
         else:
-            name = prefix+''.join(choice(ascii_letters) for num in range(length))+suffix
+            if include_digits == 1:
+                name = prefix+''.join(choice(ascii_lowercase+digits) for num in range(length))+suffix
+            else:
+                name = prefix+''.join(choice(ascii_lowercase) for num in range(length))+suffix
+            
         return name
 
     def UsernameCheck(self,name):

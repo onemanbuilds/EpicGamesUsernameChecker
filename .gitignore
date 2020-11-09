@@ -128,3 +128,6 @@ EpicGamesUsernameChecker/EpicGamesUsernameChecker.exe
 EpicGamesUsernameChecker/proxies.txt
 EpicGamesUsernameChecker/useragents.txt
 EpicGamesUsernameChecker/usernames.txt
+output/EpicGamesUsernameChecker.exe
+takens.txt
+availables.txt
